@@ -7,7 +7,5 @@ Cyber Security Club's discord bot. A remake of [CSCbot](https://github.com/Hiexy
 
 
 ```bash
-$~ chmod +x build.sh
-
-$~ ./build.sh
+bash build.sh    # use sudo if not in docker group
 ```
