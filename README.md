@@ -3,8 +3,8 @@
 Cyber Security Club's discord bot. A remake of [CSCbot](https://github.com/Hiexy/CSCBot)
 
 
-## Runing instructions (docker)
+## How to run (docker)
 
 
-```chmod +x build.sh && ./build.sh```          # use sudo if your user not in docker group
+```chmod +x build.sh && ./build.sh```               use sudo if your user not in docker group
  
