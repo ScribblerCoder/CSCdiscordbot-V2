@@ -6,6 +6,6 @@ Cyber Security Club's discord bot. A remake of [CSCbot](https://github.com/Hiexy
 ## How to run (docker)
 
 
-```bash
-sudo bash build.sh    # use sudo if not in docker group
+```console
+foo@bar:~$ sudo bash build.sh    # use sudo if not in docker group
 ```
