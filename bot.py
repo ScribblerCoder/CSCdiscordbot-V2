@@ -17,15 +17,17 @@ else:
 
 reader = csv.DictReader(open('final.csv', 'r'))
 
-dict_list = []
+dict_dict = {}
 
 for line in reader:
-    dict_list.append(line)
+    ID = line['ID']         #extract student ID from line
+    dict_dict[ID] = line    #building dictionary of dictionaries by STUDENT ID
+    
 
-
-id_ls = []
-for ls in dict_list:
-    id_ls.append(ls['ID'])
+#LEGACY SHIT CODE
+# id_ls = []
+# for ls in dict_dict:
+#     id_ls.append(ls['ID'])
 
 intents = discord.Intents.all()
 bot = commands.Bot(
@@ -43,39 +45,41 @@ async def on_ready():
     f'{guild.name} (id: f{guild.id})')
 
     
-@bot.command(name='remind')
-async def remind(ctx, day):
-    ann_id = 899008017775853639
-    channel = bot.get_channel(ann_id)
-    fr_id = 900078944701792258
-    sa_id = 900079039140745237
-    su_id = 900079255931748402
-    in_id = 898960369651953674
-    if day.lower() == 'friday':
-        id = fr_id
-        class_ = "Beginner"
-        time_ = "4-7 PM"
-        place = "online"
+#LEGACY SHIT CODE
 
-    if day.lower() == 'saturday':
-        id = sa_id
-        class_ = "Beginner"
-        time_ = "11-2 PM"
-        place = "EE 303"
+# @bot.command(name='remind')
+# async def remind(ctx, day):
+#     ann_id = 899008017775853639
+#     channel = bot.get_channel(ann_id)
+#     fr_id = 900078944701792258
+#     sa_id = 900079039140745237
+#     su_id = 900079255931748402
+#     in_id = 898960369651953674
+#     if day.lower() == 'friday':
+#         id = fr_id
+#         class_ = "Beginner"
+#         time_ = "4-7 PM"
+#         place = "online"
 
-    if day.lower() == 'sunday':
-        id = su_id
-        class_ = "Beginner"
-        time_ = "2-5 PM"
-        place = "EE 307"
+#     if day.lower() == 'saturday':
+#         id = sa_id
+#         class_ = "Beginner"
+#         time_ = "11-2 PM"
+#         place = "EE 303"
 
-    if day.lower() == 'thursday':
-        id = in_id
-        class_ = "Intermediate"
-        time_ = "2-5 PM"
-        place = "in EE 342"
+#     if day.lower() == 'sunday':
+#         id = su_id
+#         class_ = "Beginner"
+#         time_ = "2-5 PM"
+#         place = "EE 307"
 
-    await channel.send(f"Attention <@&{id}>! The {class_} class will begin at {time_}, and it will be held {place}")
+#     if day.lower() == 'thursday':
+#         id = in_id
+#         class_ = "Intermediate"
+#         time_ = "2-5 PM"
+#         place = "in EE 342"
+
+#     await channel.send(f"Attention <@&{id}>! The {class_} class will begin at {time_}, and it will be held {place}")
 
 
 @bot.command(name='verify')
@@ -100,34 +104,44 @@ async def verify(ctx, ID='', token=''):
         await ctx.send(f'No Token given, the correct format of the command is \n`!verify Student_ID Token`')
         return
 
-    if ID not in id_ls:  # Check if ID is invalid
+    # SHIT SLOW CODE
+    # if ID not in id_ls:  # Check if ID is invalid
+    #     await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
+    #     return
+
+    # this if statment is faster
+    if int(ID) not in dict_dict:  # Check if ID is invalid
         await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
         return
 
-    for ls in dict_list:  # Find User's dictionary
-        if ls['ID'] == ID:
-            break
+    # Can be improved (VERY SLOW ASS LEGACY SHIT CODE)
+    # thank you https://stackoverflow.com/questions/4391697/find-the-index-of-a-dict-within-a-list-by-matching-the-dicts-value
+    # for ls in dict_dict:  # Find User's dictionary
+    #     if ls['ID'] == ID:
+    #         break    
+    # V_token = ls['token']
+
     
-    V_token = ls['token']
-    
-    if token != V_token:   # Check if token is invalid
+    if token != dict_dict[ID]['token']:   # Check if token is invalid
         await ctx.send(f'Invalid Token, make sure that your Token is correct')
         return
     
-    if ls['registered'] != '':  # Check if user has registered previously
+    if dict_dict[ID]['registered'] != '':  # Check if user has registered previously
         await ctx.send(f'Token and ID pair have already been used.')
         return
     
-    name = ls['name']
-    level = ls['class']
+    name = dict_dict[ID]['name']
+    level = dict_dict[ID]['class']
     roles = ['Member']
 
-    role = discord.utils.get(guild.roles, name="Member")
+    # not sure why's this if-statment for?
     if len(name) > 32:
-        name = name.slpit()[0] + ' ' + name.split()[-1]
-    if len(name) > 32:
-        name = name.slpit()[0]
+        name = name.split()[0] + ' ' + name.split()[1]
+        name = name.split()[0]
+
     await member.edit(nick=f'{name}')
+
+    role = discord.utils.get(guild.roles, name="Member")
     await member.add_roles(role)
     
     if level != 'None':
@@ -138,8 +152,9 @@ async def verify(ctx, ID='', token=''):
         roles.append(level.split('/')[0])
         roles.append(level.split('/')[1])
 
-    time.sleep(5)
-    ls['registered'] = 'True'
+
+    time.sleep(5)   # doing all these checks is tiring so I need to rest hahaha
+    dict_dict[ID]['registered'] = 'True'
     await ctx.send(f'Congrats, {member.name}. You are now an official member of the CSC discord server.\nYou were given the following roles:\n')
     ctr = 0
     st = '\n`'
