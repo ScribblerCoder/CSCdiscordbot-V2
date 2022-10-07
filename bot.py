@@ -110,7 +110,7 @@ async def verify(ctx, ID='', token=''):
     #     return
 
     # this if statment is faster
-    if int(ID) not in dict_dict:  # Check if ID is invalid
+    if ID not in dict_dict:  # Check if ID is invalid
         await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
         return
 
