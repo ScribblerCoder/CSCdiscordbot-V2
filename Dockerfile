@@ -6,6 +6,5 @@ WORKDIR /app
 
 COPY . .
 
-RUN unzip final.zip
 
 RUN chmod +x script.sh
