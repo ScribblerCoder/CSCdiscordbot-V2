@@ -170,7 +170,7 @@ async def on_member_join(member):
         if int(guild.id) == int(config["guild_id"]):
             break
     await member.create_dm()
-    await member.dm_channel.send(f'Hello {member.name}, Welcome to the official Cyber Security Club 21/22 server\nTo be able to join the server you must verify your identity. You will need to enter the command ```!verify Student_ID Token``` here in the direct message channel.')
+    await member.dm_channel.send(f'Hello {member.name}, Welcome to the official Cyber Security Club server\nTo be able to join the server you must verify your identity. You will need to enter the command ```!verify Student_ID Token``` here in the direct message channel.')
 
 
 bot.run(config["token"], reconnect=True)
