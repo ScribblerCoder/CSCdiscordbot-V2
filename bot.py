@@ -110,12 +110,13 @@ async def verify(ctx, ID='', token=''):
     #     return
 
     # this if statment is faster
+    # thank you https://stackoverflow.com/questions/4391697/find-the-index-of-a-dict-within-a-list-by-matching-the-dicts-value
     if ID not in dict_dict:  # Check if ID is invalid
         await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
         return
 
     # Can be improved (VERY SLOW ASS LEGACY SHIT CODE)
-    # thank you https://stackoverflow.com/questions/4391697/find-the-index-of-a-dict-within-a-list-by-matching-the-dicts-value
+
     # for ls in dict_dict:  # Find User's dictionary
     #     if ls['ID'] == ID:
     #         break    
