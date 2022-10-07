@@ -18,15 +18,15 @@ Cyber Security Club's discord bot. A remake of **[CSCbot](https://github.com/Hie
 - Intermediate Class 1 <academic_year> <first_sem/second_sem> 
 ```
 
-2- fix [generate.py](generate.py) field names with your field names from the registeration form 
+3- fix [generate.py](generate.py) field names with your field names from the registeration form 
 
-3- generate members' csv file  
+4- generate members' csv file  
 
 ```console
 foo@bar:~$ python generate.py
 ```
 
-4- build and run the docker container 
+5- build and run the docker container 
 ```console
 foo@bar:~$ sudo bash build.sh    # use sudo if not in docker group
 ```
