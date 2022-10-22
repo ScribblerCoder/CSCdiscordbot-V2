@@ -146,7 +146,7 @@ async def verify(ctx, ID='', token=''):
     await member.add_roles(role)
     
     if level != 'None':
-        role = discord.utils.get(guild.roles, name=level.split('/')[0])
+        role = discord.utils.get(guild.roles, name=level)
         await member.add_roles(role)
         roles.append(level)
 
