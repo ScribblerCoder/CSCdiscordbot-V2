@@ -81,6 +81,10 @@ async def on_ready():
 
 #     await channel.send(f"Attention <@&{id}>! The {class_} class will begin at {time_}, and it will be held {place}")
 
+@bot.command(name='bully_nizar')
+async def bully_nizar(ctx, ID='',token=''):
+    await ctx.send(f'nizar nizar nizar niz niz niz niz nizaaaar..... please buy tickets :)')
+    return
 
 @bot.command(name='verify')
 async def verify(ctx, ID='', token=''):
