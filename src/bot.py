@@ -75,7 +75,7 @@ async def verify(ctx, ID='', token=''):
 
     # search for the member's record
     rows = cursor.execute(
-        "SELECT * FROM memebers WHERE id = ?",
+        "SELECT * FROM mebers WHERE id = ?",
         (ID,),
     ).fetchall()
 
