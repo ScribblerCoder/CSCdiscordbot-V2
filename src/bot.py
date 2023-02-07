@@ -119,14 +119,24 @@ async def verify(ctx, ID='', token=''):
     )
     connection.commit()
 
-    await ctx.send(f'Congrats, {member.name}. You are now an official member of the CSC discord server.\nYou were given the following roles:\n')
-    ctr = 0
-    st = '\n`'
+    st = '```\n'
     for i in roles:
         ctr += 1
         st += f'{ctr}- {i}\n'
-    st += '`'
-    await ctx.send(st)
+    st += '```'
+
+    embed=discord.Embed(title="Welcome!", description=f"You are now an official member of the CSC discord server.\nYou were given the following roles:\n {st}", color=0xFF5733)
+    embed.set_image(url="https://i.pinimg.com/originals/be/97/2b/be972b4214bb16fc4a088b9f73c18717.jpg")
+    await ctx.send(embed=embed)
+
+    # await ctx.send(f'Congrats, {member.name}. You are now an official member of the CSC discord server.\nYou were given the following roles:\n')
+    # ctr = 0
+    # st = '\n`'
+    # for i in roles:
+    #     ctr += 1
+    #     st += f'{ctr}- {i}\n'
+    # st += '`'
+    # await ctx.send(st)
 
 @bot.event
 async def on_member_join(member):
