@@ -16,10 +16,6 @@ else:
     with open("config.json") as file:
         config = json.load(file)
 
-admin = client.fetch_user("USER_ID")
-    
-
-
 
 connection = sqlite3.connect("/app/data/members_database.db")
 cursor = connection.cursor()
@@ -35,6 +31,14 @@ bot = commands.Bot(
     intents=intents
     )
     
+
+
+@tasks.loop(seconds=5.0, count=1)
+async def alert_admin():
+    
+
+
+
 @bot.event
 async def on_ready():
     for guild in bot.guilds:
@@ -83,10 +87,6 @@ async def verify(ctx, ID='', token=''):
     if rows.len() == 0:  # Check if ID exists 
         await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
         return
-
-    if rows.len() >= 1:  # Check if there are duplicate entries
-        await admin.send(f'Hey, {rows[0][0]} is duplicated. Go check my db')
-
     
     if token != rows[0][3]:   # Check if token is invalid
         await ctx.send(f'Invalid Token, make sure that your Token is correct')
