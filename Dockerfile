@@ -1,10 +1,9 @@
 FROM python:3
 FROM gorialis/discord.py
 
-RUN mkdir -p /app
 WORKDIR /app
 
-COPY . .
+COPY src/ ./
 
+RUN chmod +x run.sh
 
-RUN chmod +x script.sh
