@@ -79,7 +79,7 @@ async def verify(ctx, ID='', token=''):
         (ID,),
     ).fetchall()
 
-    if rows.len() == 0:  # Check if ID exists 
+    if len(rows) == 0:  # Check if ID exists 
         await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
         return
     
