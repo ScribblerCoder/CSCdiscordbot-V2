@@ -1,12 +1,14 @@
 #! /usr/bin/env python3
 import os
-import csv
 import json
 import sys
 import time
+import sqlite3
+import uuid
 
 import discord
 from discord.ext import commands, tasks
+
 
 if not os.path.isfile("config.json"):
     sys.exit("'config.json' not found! Please add it and try again.")
@@ -14,20 +16,18 @@ else:
     with open("config.json") as file:
         config = json.load(file)
 
-
-reader = csv.DictReader(open('final.csv', 'r'))
-
-dict_dict = {}
-
-for line in reader:
-    ID = line['ID']         #extract student ID from line
-    dict_dict[ID] = line    #building dictionary of dictionaries by STUDENT ID
+admin = client.fetch_user("USER_ID")
     
 
-#LEGACY SHIT CODE
-# id_ls = []
-# for ls in dict_dict:
-#     id_ls.append(ls['ID'])
+
+
+connection = sqlite3.connect("/app/data/members_database.db")
+cursor = connection.cursor()
+cursor.execute(
+            'CREATE TABLE IF NOT EXISTS members (id int, name text, class text, token text, registered bool)'
+        )
+connection.commit()
+
 
 intents = discord.Intents.all()
 bot = commands.Bot(
@@ -45,41 +45,6 @@ async def on_ready():
     f'{guild.name} (id: f{guild.id})')
 
     
-#LEGACY SHIT CODE
-
-# @bot.command(name='remind')
-# async def remind(ctx, day):
-#     ann_id = 899008017775853639
-#     channel = bot.get_channel(ann_id)
-#     fr_id = 900078944701792258
-#     sa_id = 900079039140745237
-#     su_id = 900079255931748402
-#     in_id = 898960369651953674
-#     if day.lower() == 'friday':
-#         id = fr_id
-#         class_ = "Beginner"
-#         time_ = "4-7 PM"
-#         place = "online"
-
-#     if day.lower() == 'saturday':
-#         id = sa_id
-#         class_ = "Beginner"
-#         time_ = "11-2 PM"
-#         place = "EE 303"
-
-#     if day.lower() == 'sunday':
-#         id = su_id
-#         class_ = "Beginner"
-#         time_ = "2-5 PM"
-#         place = "EE 307"
-
-#     if day.lower() == 'thursday':
-#         id = in_id
-#         class_ = "Intermediate"
-#         time_ = "2-5 PM"
-#         place = "in EE 342"
-
-#     await channel.send(f"Attention <@&{id}>! The {class_} class will begin at {time_}, and it will be held {place}")
 
 @bot.command(name='bully_nizar')
 async def bully_nizar(ctx, ID='',token=''):
@@ -108,35 +73,31 @@ async def verify(ctx, ID='', token=''):
         await ctx.send(f'No Token given, the correct format of the command is \n`!verify Student_ID Token`')
         return
 
-    # SHIT SLOW CODE
-    # if ID not in id_ls:  # Check if ID is invalid
-    #     await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
-    #     return
 
-    # this if statment is faster
-    # thank you https://stackoverflow.com/questions/4391697/find-the-index-of-a-dict-within-a-list-by-matching-the-dicts-value
-    if ID not in dict_dict:  # Check if ID is invalid
+    # search for the member's record
+    rows = cursor.execute(
+        "SELECT * FROM memebers WHERE id = ?",
+        (ID,),
+    ).fetchall()
+
+    if rows.len() == 0:  # Check if ID exists 
         await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
         return
 
-    # Can be improved (VERY SLOW ASS LEGACY SHIT CODE)
-
-    # for ls in dict_dict:  # Find User's dictionary
-    #     if ls['ID'] == ID:
-    #         break    
-    # V_token = ls['token']
+    if rows.len() >= 1:  # Check if there are duplicate entries
+        await admin.send(f'Hey, {rows[0][0]} is duplicated. Go check my db')
 
     
-    if token != dict_dict[ID]['token']:   # Check if token is invalid
+    if token != rows[0][3]:   # Check if token is invalid
         await ctx.send(f'Invalid Token, make sure that your Token is correct')
         return
     
-    if dict_dict[ID]['registered'] != '':  # Check if user has registered previously
+    if rows[0][4]:  # Check if user has registered previously
         await ctx.send(f'Token and ID pair have already been used.')
         return
     
-    name = dict_dict[ID]['name']
-    level = dict_dict[ID]['class']
+    name = rows[0][1]
+    level = rows[0][2]
     roles = ['Member']
 
     # not sure why's this if-statment for?
@@ -156,7 +117,13 @@ async def verify(ctx, ID='', token=''):
 
 
     time.sleep(5)   # doing all these checks is tiring so I need to rest hahaha
-    dict_dict[ID]['registered'] = 'True'
+
+    cursor.execute(
+        "UPDATE members SET registered = TRUE WHERE id = ?",
+        (ID,)
+    )
+    connection.commit()
+
     await ctx.send(f'Congrats, {member.name}. You are now an official member of the CSC discord server.\nYou were given the following roles:\n')
     ctr = 0
     st = '\n`'
