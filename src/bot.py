@@ -33,11 +33,6 @@ bot = commands.Bot(
     
 
 
-@tasks.loop(seconds=5.0, count=1)
-async def alert_admin():
-    
-
-
 
 @bot.event
 async def on_ready():
