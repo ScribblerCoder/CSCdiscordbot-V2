@@ -1,10 +1,22 @@
 # CSCdiscordbot
 
-Cyber Security Club's discord bot. A remake of **[CSCbot](https://github.com/Hiexy/CSCBot)**
+Cyber Security Club's discord bot. A fork of **[CSCbot](https://github.com/cscpsut/CSCdiscordbot)** This bot will sync members data from Google Drive using **[Google Sheets API](https://developers.google.com/sheets/api/reference/rest)**
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+# Ignore the following (Will be reworked)
 
 ## How to run (docker)
 
