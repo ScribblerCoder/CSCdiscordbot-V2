@@ -5,5 +5,5 @@ WORKDIR /app
 
 COPY src/ ./
 
-RUN chmod +x run.sh
+ENTRYPOINT ["python3","bot.py"]
 
