@@ -1,2 +1,4 @@
-./src/*.json
+./src/config.json
+./src/credentials.json
+./src/token.json
 data/
