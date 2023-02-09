@@ -1,4 +1,6 @@
 #! /usr/bin/env python3
+from __future__ import print_function
+
 import os
 import json
 import sys
@@ -10,7 +12,7 @@ import discord
 from discord.ext import commands, tasks
 
 
-from __future__ import print_function
+
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
