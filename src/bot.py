@@ -20,7 +20,7 @@ else:
 connection = sqlite3.connect("/app/data/members_database.db")
 cursor = connection.cursor()
 cursor.execute(
-            'CREATE TABLE IF NOT EXISTS members (id int, name text, class text, token text, registered bool)'
+            'CREATE TABLE IF NOT EXISTS members (name text, email text, id int primary key unique, class text, token text unique, registered bool, email_sent bool)'
         )
 connection.commit()
 
