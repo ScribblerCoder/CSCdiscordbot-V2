@@ -1,6 +1,6 @@
 # CSCdiscordbot
 
-Cyber Security Club's discord bot. A fork of **[CSCbot](https://github.com/cscpsut/CSCdiscordbot)** This bot will sync members data from Google Drive using **[Google Sheets API](https://developers.google.com/sheets/api/reference/rest)** into sqlite database
+Cyber Security Club's discord bot. A fork of **[CSCdiscordbot](https://github.com/cscpsut/CSCdiscordbot)** This bot will sync members data from Google Drive using **[Google Sheets API](https://developers.google.com/sheets/api/reference/rest)** into sqlite database
 
 
 
