@@ -1,2 +1,2 @@
-./src/config.json
+!src/*.json
 data/
