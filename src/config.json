@@ -1,6 +1,6 @@
 {
 	"bot_prefix":"YOUR-PREFIX",
 	"guild_id":"YOUR-SERVERID",
-	"token":"YOUR-BOT-TOKENs"
+	"token":"YOUR-BOT-TOKEN"
 
 }
