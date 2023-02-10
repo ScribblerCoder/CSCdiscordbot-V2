@@ -125,7 +125,7 @@ async def sync_db():
                 # Add members into db
                 cursor.execute('''INSERT OR IGNORE INTO members(
                    name,email,id,class,token,registered,email_sent) VALUES 
-                   (?,?,?,?,?,?,?)''',(row[0],row[1],int(row[2]),row[3],str(uuid.uuid4()),0,0) ) 
+                   (?,?,?,?,?,?,?)''',(row[0],row[1],int(row[2]),row[5],str(uuid.uuid4()),0,0) ) 
                 connection.commit()
 
     except HttpError as err:
@@ -448,16 +448,16 @@ async def verify(ctx, ID='', token=''):
         await ctx.send(f'Wrong Student_ID given, make sure that your Student_ID is correct')
         return
     
-    if token != rows[0][3]:   # Check if token is invalid
+    if token != rows[0][4]:   # Check if token is invalid
         await ctx.send(f'Invalid Token, make sure that your Token is correct')
         return
     
-    if rows[0][4]:  # Check if user has registered previously
+    if rows[0][5]:  # Check if user has registered previously
         await ctx.send(f'Token and ID pair have already been used.')
         return
     
-    name = rows[0][1]
-    level = rows[0][2]
+    name = rows[0][0]
+    level = rows[0][3]
     roles = ['Member']
 
     # not sure why's this if-statment for?
@@ -485,6 +485,7 @@ async def verify(ctx, ID='', token=''):
     )
     connection.commit()
 
+    ctr = 0
     st = '```\n'
     for i in roles:
         ctr += 1
