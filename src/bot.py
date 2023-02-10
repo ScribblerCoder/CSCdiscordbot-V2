@@ -7,6 +7,7 @@ import sys
 import time
 import sqlite3
 import uuid
+import base64
 
 import discord
 from discord.ext import commands, tasks
