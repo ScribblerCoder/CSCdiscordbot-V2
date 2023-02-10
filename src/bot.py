@@ -387,10 +387,18 @@ async def sync_db():
             create_message = {
                 'raw': encoded_message
             }
-            # pylint: disable=E1101
+
             send_message = (service.users().messages().send
                             (userId="me", body=create_message).execute())
-            # avoid throttling just in case
+
+            # set email_sent to TRUE to avoid sending again
+            cursor.execute(
+                "UPDATE members SET email_sent = TRUE WHERE id = ?",
+                (row[2],)
+            )
+            connection.commit()
+            
+            # throttling just in case
             time.sleep(0.001)
 
         except HttpError as error:
