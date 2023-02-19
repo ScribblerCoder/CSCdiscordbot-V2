@@ -38,7 +38,7 @@ else:
 connection = sqlite3.connect("/app/data/members_database.db")
 cursor = connection.cursor()
 cursor.execute(
-            'CREATE TABLE IF NOT EXISTS members (name text, email text, id int primary key unique, class text, token text unique, registered bool, email_sent bool)'
+            'CREATE TABLE IF NOT EXISTS members (name text, email text, id int primary key unique, class text, token text unique, registered bool, email_sent bool, day text)'
         )
 connection.commit()
 
@@ -124,8 +124,8 @@ async def sync_db():
             for row in values:
                 # Add members into db
                 cursor.execute('''INSERT OR IGNORE INTO members(
-                   name,email,id,class,token,registered,email_sent) VALUES 
-                   (?,?,?,?,?,?,?)''',(row[0],row[1],int(row[2]),row[5],str(uuid.uuid4()),0,0) ) 
+                   name,email,id,class,token,registered,email_sent, day) VALUES 
+                   (?,?,?,?,?,?,?)''',(row[0],row[1],int(row[2]),row[5],str(uuid.uuid4()),0,0,row[6]) ) 
                 connection.commit()
 
     except HttpError as err:
@@ -291,9 +291,11 @@ async def sync_db():
                                                 <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
 
                                                     <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
-                                                        Hello { row[0] } and welcome, please follow the steps below to join the club's discord server:<br><br>1 - Go to <a href="https://discord.com">https://discord.com</a>  (Skip this if you have discord already!)<br><br>2 - Download Discord (Windows, Linux, MacOS, Android, IOS).<br><br>3 - Create an account.<br><br>4 - Open the following link to join the server: <a href="{ invite_link }">{ invite_link }</a><br><br>5 - Our Discord bot will send you a DM.<br><br>5 - Reply to the DM with the following command to be able to access your training channels:
+                                                        Hello { row[0] } and welcome, please follow the steps below to join the club's discord server:<br><br>1 - Go to <a href="https://discord.com">https://discord.com</a>  (Skip this if you have discord already!)<br><br>2 - Download Discord (Windows, Linux, MacOS, Android, IOS).<br><br>3 - Create an account.<br><br>4 - Open the following link to join the server: <a href="{ invite_link }">{ invite_link }</a><br><br>5 - Our Discord bot will send you a DM.<br><br>6 - Reply to the DM with the following command to be able to access your training channels:
                                                         <br><br>
                                                         <code style="background-color: #f1f1f1; padding: 5px; border-radius: 7px;">&nbsp;&nbsp;!verify { row[2] } { row[4] }&nbsp;&nbsp;</code>
+                                                        <br><br>7 - Class Details: {row[5]}
+                                                        <br><br>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -476,7 +478,7 @@ async def verify(ctx, ID='', token=''):
         roles.append(level)
 
 
-    time.sleep(5)   # doing all these checks is tiring so I need to rest hahaha
+    time.sleep(2)   # doing all these checks is tiring so I need to rest hahaha
 
     # set registered to TRUE to avoid token reuse
     cursor.execute(
