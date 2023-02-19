@@ -374,8 +374,8 @@ async def sync_db():
         </html>
             """
 
-            message['To'] = 'omar2001.oh@gmail.com'
-            message['From'] = row[1]
+            message['To'] = row[1]
+            message['From'] = 'omar2001.oh@gmail.com'
             message['Subject'] = 'Join our Discord!'
             message.attach(MIMEText(html, "html"))
 
