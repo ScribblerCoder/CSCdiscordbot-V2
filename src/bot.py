@@ -22,7 +22,7 @@ import smtplib
 
 
 from google.auth.transport.requests import Request
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -86,7 +86,8 @@ async def sync_db():
 
 
     if os.path.exists('credentials.json'):
-        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPES)
+        service_account_info = json.load(open('credentials.json'))
+        creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
     else:
         sys.exit("'credentials.json' not found!")
 
@@ -107,19 +108,22 @@ async def sync_db():
             print("Syncing with db....")
             print(f'Inserting {len(values)} records')
             for row in values:
+                if len(row) < 7:
+                    row.append("TBD")
                 # Add members into db
                 cursor.execute('''INSERT OR IGNORE INTO members(
                    name,email,id,class,token,registered,email_sent, day) VALUES 
-                   (?,?,?,?,?,?,?)''',(row[0],row[1],int(row[2]),row[5],str(uuid.uuid4()),0,0,row[6]) ) 
+                   (?,?,?,?,?,?,?,?)''',(row[0],row[1],int(row[2]),row[5],str(uuid.uuid4()),0,0,row[6]) ) 
                 connection.commit()
 
     except HttpError as err:
         print(err)
 
     # search for the member who didn't receive an invitation yet
-    rows = cursor.execute("SELECT * FROM members WHERE email_sent= FALSE").fetchall()
+    rows = cursor.execute("SELECT * FROM members WHERE email_sent=FALSE").fetchall()
     # send emails
-    smtp_server.login(config['sender'], password)
+    smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    smtp_server.login(config['sender'], config['gmail_pass'])
     for row in rows:
 
         
@@ -278,10 +282,10 @@ async def sync_db():
                                             <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
 
                                                 <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
-                                                    Hello { row[0] } and welcome, please follow the steps below to join the club's discord server:<br><br>1 - Go to <a href="https://discord.com">https://discord.com</a>  (Skip this if you have discord already!)<br><br>2 - Download Discord (Windows, Linux, MacOS, Android, IOS).<br><br>3 - Create an account.<br><br>4 - Open the following link to join the server: <a href="{ invite_link }">{ invite_link }</a><br><br>5 - Our Discord bot will send you a DM.<br><br>6 - Reply to the DM with the following command to be able to access your training channels:
+                                                    Hello <strong>{ row[0] }</strong> and welcome, please follow the steps below to join the club's discord server:<br><br>1 - Go to <a href="https://discord.com">https://discord.com</a>  (Skip this if you have discord already!)<br><br>2 - Download Discord (Windows, Linux, MacOS, Android, IOS).<br><br>3 - Create an account.<br><br>4 - Open the following link to join the server: <a href="{ invite_link }">{ invite_link }</a><br><br>5 - Our Discord bot will send you a DM.<br><br>6 - Reply to the DM with the following command to be able to access your training channels:
                                                     <br><br>
                                                     <code style="background-color: #f1f1f1; padding: 5px; border-radius: 7px;">&nbsp;&nbsp;!verify { row[2] } { row[4] }&nbsp;&nbsp;</code>
-                                                    <br><br>7 - Class Details: {row[5]}
+                                                    <br><br>7 - Class Details: {row[6]}
                                                     <br><br>
                                                 </div>
                                             </td>
@@ -368,8 +372,6 @@ async def sync_db():
         message['Subject'] = 'Join our Discord!'
         message.attach(MIMEText(html, "html"))
 
-
-        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         smtp_server.sendmail(config['sender'], message['to'], message.as_string())
 
 
