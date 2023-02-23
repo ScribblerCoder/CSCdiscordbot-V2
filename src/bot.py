@@ -18,13 +18,14 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import smtplib
 
 
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
 
 
 if not os.path.isfile("config.json"):
@@ -76,7 +77,7 @@ async def on_member_join(member):
 @tasks.loop(seconds=10)
 async def sync_db():
     # If modifying these scopes, delete the file token.json.
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/gmail.send']
+    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
     # The ID and range of a sample spreadsheet.
     SAMPLE_SPREADSHEET_ID = '1-JEKV1K6EUsjD_ySjdOiAfw0P5Do3_no56xzcgLT9n8'
@@ -84,26 +85,10 @@ async def sync_db():
     invite_link = "https://discord.gg/dkQdAeEH"
 
 
-    """Shows basic usage of the Sheets API.
-    Prints values from a sample spreadsheet.
-    """
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+    if os.path.exists('credentials.json'):
+        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPES)
+    else:
+        sys.exit("'credentials.json' not found!")
 
     try:
         service = build('sheets', 'v4', credentials=creds)
@@ -133,278 +118,273 @@ async def sync_db():
 
     # search for the member who didn't receive an invitation yet
     rows = cursor.execute("SELECT * FROM members WHERE email_sent= FALSE").fetchall()
+    # send emails
+    smtp_server.login(config['sender'], password)
     for row in rows:
-        try:
-            service = build('gmail', 'v1', credentials=creds)
-            message = MIMEMultipart()
 
-            html = f"""\
-        <!doctype html>
-        <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+        
+        message = MIMEMultipart()
 
-        <head>
-            <title>
+        html = f"""\
+    <!doctype html>
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
-            </title>
-            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-             <!-- <meta http-equiv="refresh" content="5" /> -->
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <style type="text/css">
-                #outlook a {{
-                    padding: 0;
+    <head>
+        <title>
+
+        </title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+         <!-- <meta http-equiv="refresh" content="5" /> -->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style type="text/css">
+            #outlook a {{
+                padding: 0;
+            }}
+
+            .ReadMsgBody {{
+                width: 100%;
+            }}
+
+            .ExternalClass {{
+                width: 100%;
+            }}
+
+            .ExternalClass * {{
+                line-height: 100%;
+            }}
+
+            body {{
+                margin: 0;
+                padding: 0;
+                -webkit-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+            }}
+
+            table,
+            td {{
+                border-collapse: collapse;
+                mso-table-lspace: 0pt;
+                mso-table-rspace: 0pt;
+            }}
+
+            img {{
+                border: 0;
+                height: auto;
+                line-height: 100%;
+                outline: none;
+                text-decoration: none;
+                -ms-interpolation-mode: bicubic;
+            }}
+
+            p {{
+                display: block;
+                margin: 13px 0;
+            }}
+        </style>
+
+        <style type="text/css">
+            @media only screen and (max-width:480px) {{
+                @-ms-viewport {{
+                    width: 320px;
                 }}
-
-                .ReadMsgBody {{
-                    width: 100%;
+                @viewport {{
+                    width: 320px;
                 }}
+            }}
+        </style>
 
-                .ExternalClass {{
-                    width: 100%;
+
+        <style type="text/css">
+            @media only screen and (min-width:480px) {{
+                .mj-column-per-100 {{
+                    width: 100% !important;
                 }}
-
-                .ExternalClass * {{
-                    line-height: 100%;
-                }}
-
-                body {{
-                    margin: 0;
-                    padding: 0;
-                    -webkit-text-size-adjust: 100%;
-                    -ms-text-size-adjust: 100%;
-                }}
-
-                table,
-                td {{
-                    border-collapse: collapse;
-                    mso-table-lspace: 0pt;
-                    mso-table-rspace: 0pt;
-                }}
-
-                img {{
-                    border: 0;
-                    height: auto;
-                    line-height: 100%;
-                    outline: none;
-                    text-decoration: none;
-                    -ms-interpolation-mode: bicubic;
-                }}
-
-                p {{
-                    display: block;
-                    margin: 13px 0;
-                }}
-            </style>
-
-            <style type="text/css">
-                @media only screen and (max-width:480px) {{
-                    @-ms-viewport {{
-                        width: 320px;
-                    }}
-                    @viewport {{
-                        width: 320px;
-                    }}
-                }}
-            </style>
+            }}
+        </style>
 
 
-            <style type="text/css">
-                @media only screen and (min-width:480px) {{
-                    .mj-column-per-100 {{
-                        width: 100% !important;
-                    }}
-                }}
-            </style>
+        <style type="text/css">
+        </style>
+
+    </head>
+
+    <body style="background-color:#f9f9f9;">
 
 
-            <style type="text/css">
-            </style>
-
-        </head>
-
-        <body style="background-color:#f9f9f9;">
-
-
-            <div style="background-color:#f9f9f9;">
+        <div style="background-color:#f9f9f9;">
 
 
 
 
-                <div style="background:#f9f9f9;background-color:#f9f9f9;Margin:0px auto;max-width:600px;">
+            <div style="background:#f9f9f9;background-color:#f9f9f9;Margin:0px auto;max-width:600px;">
 
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#f9f9f9;background-color:#f9f9f9;width:100%;">
-                        <tbody>
-                            <tr>
-                                <td style="border-bottom:#333957 solid 5px;direction:ltr;font-size:0px;padding:20px 0;text-align:center;vertical-align:top;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#f9f9f9;background-color:#f9f9f9;width:100%;">
+                    <tbody>
+                        <tr>
+                            <td style="border-bottom:#333957 solid 5px;direction:ltr;font-size:0px;padding:20px 0;text-align:center;vertical-align:top;">
 
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                </div>
-
-
-
-
-
-                <div style="background:#fff;background-color:#fff;Margin:0px auto;max-width:600px;">
-
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fff;background-color:#fff;width:100%;">
-                        <tbody>
-                            <tr>
-                                <td style="border:#dddddd solid 1px;border-top:0px;direction:ltr;font-size:0px;padding:20px 0;text-align:center;vertical-align:top;">
-
-                                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:bottom;width:100%;">
-
-                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:bottom;" width="100%">
-
-                                            <tr>
-                                                <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-
-                                                    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
-                                                        <tbody>
-                                                            <tr>
-                                                                <td style="width:64px;">
-
-                                                                    <img height="auto" src="https://ci3.googleusercontent.com/mail-sig/AIorK4yKLsdY17j_7YURkbXBcR5vmOzQmfyodgKA_BrkgCm0UDtIa_MwiYgao-bPooRYJTGTTly4_Rw" style="border:0;display:block;outline:none;text-decoration:none;width:200%;" width="64" />
-
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td align="center" style="font-size:0px;padding:10px 25px;padding-bottom:40px;word-break:break-word;">
-
-                                                    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:28px;font-weight:bold;line-height:1;text-align:center;color:#555;">
-                                                        Welcome to the Cyber Security Club
-                                                    </div>
-
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-
-                                                    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
-                                                        Hello { row[0] } and welcome, please follow the steps below to join the club's discord server:<br><br>1 - Go to <a href="https://discord.com">https://discord.com</a>  (Skip this if you have discord already!)<br><br>2 - Download Discord (Windows, Linux, MacOS, Android, IOS).<br><br>3 - Create an account.<br><br>4 - Open the following link to join the server: <a href="{ invite_link }">{ invite_link }</a><br><br>5 - Our Discord bot will send you a DM.<br><br>6 - Reply to the DM with the following command to be able to access your training channels:
-                                                        <br><br>
-                                                        <code style="background-color: #f1f1f1; padding: 5px; border-radius: 7px;">&nbsp;&nbsp;!verify { row[2] } { row[4] }&nbsp;&nbsp;</code>
-                                                        <br><br>7 - Class Details: {row[5]}
-                                                        <br><br>
-                                                    </div>
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td align="center" style="font-size:0px;padding:10px 25px;padding-top:20px;padding-bottom:10px;word-break:break-word;">
-
-                                                    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
-                                                        <tr>
-                                                            <td align="center" bgcolor="#2F67F6" role="presentation" style="border:none;border-radius:6px;color:#ffffff;cursor:auto;padding:15px 25px;" valign="middle">
-                                                                <a href="https://discord.com" style="background:#2F67F6;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;">
-                                                                    Join our Discord!
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-
-                                                    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;line-height:20px;text-align:left;color:#525252;">
-                                                        Best regards,<br> Cyber Security Club<br>PSUT<br>
-                                                        <a href="https://cscpsut.com" style="color:#2F67F6">cscpsut.com</a>
-                                                    </div>
-
-                                                </td>
-                                            </tr>
-
-                                        </table>
-
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div style="Margin:0px auto;max-width:600px;">
-
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-                        <tbody>
-                            <tr>
-                                <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;vertical-align:top;">
-
-
-                                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:bottom;width:100%;">
-
-                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                                            <tbody>
-                                                <tr>
-                                                    <td style="vertical-align:bottom;padding:0;">
-
-                                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-
-                                                            
-
-                                                        </table>
-
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-
-                                    </div>   
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
             </div>
 
-        </body>
-
-        </html>
-            """
-
-            message['To'] = row[1]
-            message['From'] = 'omar2001.oh@gmail.com'
-            message['Subject'] = 'Join our Discord!'
-            message.attach(MIMEText(html, "html"))
 
 
-            # encoded message
-            encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
 
 
-            create_message = {
-                'raw': encoded_message
-            }
+            <div style="background:#fff;background-color:#fff;Margin:0px auto;max-width:600px;">
 
-            send_message = (service.users().messages().send
-                            (userId="me", body=create_message).execute())
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fff;background-color:#fff;width:100%;">
+                    <tbody>
+                        <tr>
+                            <td style="border:#dddddd solid 1px;border-top:0px;direction:ltr;font-size:0px;padding:20px 0;text-align:center;vertical-align:top;">
 
-            # set email_sent to TRUE to avoid sending again
-            cursor.execute(
-                "UPDATE members SET email_sent = TRUE WHERE id = ?",
-                (row[2],)
-            )
-            connection.commit()
-            
-            # throttling just in case
-            time.sleep(0.001)
+                                <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:bottom;width:100%;">
 
-        except HttpError as error:
-            print(F'An error occurred: {error}')
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:bottom;" width="100%">
+
+                                        <tr>
+                                            <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+
+                                                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td style="width:64px;">
+
+                                                                <img height="auto" src="https://ci3.googleusercontent.com/mail-sig/AIorK4yKLsdY17j_7YURkbXBcR5vmOzQmfyodgKA_BrkgCm0UDtIa_MwiYgao-bPooRYJTGTTly4_Rw" style="border:0;display:block;outline:none;text-decoration:none;width:200%;" width="64" />
+
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td align="center" style="font-size:0px;padding:10px 25px;padding-bottom:40px;word-break:break-word;">
+
+                                                <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:28px;font-weight:bold;line-height:1;text-align:center;color:#555;">
+                                                    Welcome to the Cyber Security Club
+                                                </div>
+
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+
+                                                <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
+                                                    Hello { row[0] } and welcome, please follow the steps below to join the club's discord server:<br><br>1 - Go to <a href="https://discord.com">https://discord.com</a>  (Skip this if you have discord already!)<br><br>2 - Download Discord (Windows, Linux, MacOS, Android, IOS).<br><br>3 - Create an account.<br><br>4 - Open the following link to join the server: <a href="{ invite_link }">{ invite_link }</a><br><br>5 - Our Discord bot will send you a DM.<br><br>6 - Reply to the DM with the following command to be able to access your training channels:
+                                                    <br><br>
+                                                    <code style="background-color: #f1f1f1; padding: 5px; border-radius: 7px;">&nbsp;&nbsp;!verify { row[2] } { row[4] }&nbsp;&nbsp;</code>
+                                                    <br><br>7 - Class Details: {row[5]}
+                                                    <br><br>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td align="center" style="font-size:0px;padding:10px 25px;padding-top:20px;padding-bottom:10px;word-break:break-word;">
+
+                                                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                                                    <tr>
+                                                        <td align="center" bgcolor="#2F67F6" role="presentation" style="border:none;border-radius:6px;color:#ffffff;cursor:auto;padding:15px 25px;" valign="middle">
+                                                            <a href="https://discord.com" style="background:#2F67F6;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;">
+                                                                Join our Discord!
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+
+                                                <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;line-height:20px;text-align:left;color:#525252;">
+                                                    Best regards,<br> Cyber Security Club<br>PSUT<br>
+                                                    <a href="https://cscpsut.com" style="color:#2F67F6">cscpsut.com</a>
+                                                </div>
+
+                                            </td>
+                                        </tr>
+
+                                    </table>
+
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="Margin:0px auto;max-width:600px;">
+
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                    <tbody>
+                        <tr>
+                            <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;vertical-align:top;">
+
+
+                                <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:bottom;width:100%;">
+
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                        <tbody>
+                                            <tr>
+                                                <td style="vertical-align:bottom;padding:0;">
+
+                                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+
+                                                        
+
+                                                    </table>
+
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                </div>   
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+
+    </body>
+
+    </html>
+        """
+
+        message['To'] = row[1]
+        message['From'] = config['sender']
+        message['Subject'] = 'Join our Discord!'
+        message.attach(MIMEText(html, "html"))
+
+
+        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        smtp_server.sendmail(config['sender'], message['to'], message.as_string())
+
+
+        # set email_sent to TRUE to avoid sending again
+        cursor.execute(
+            "UPDATE members SET email_sent = TRUE WHERE id = ?",
+            (row[2],)
+        )
+        connection.commit()
+        
+        # throttling just in case
+        time.sleep(0.001)
+    
+    smtp_server.quit()
+
 
 
 
