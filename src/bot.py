@@ -80,9 +80,9 @@ async def sync_db():
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
     # The ID and range of a sample spreadsheet.
-    SAMPLE_SPREADSHEET_ID = '1-JEKV1K6EUsjD_ySjdOiAfw0P5Do3_no56xzcgLT9n8'
-    SAMPLE_RANGE_NAME = 'B2:K500'
-    invite_link = "https://discord.gg/dkQdAeEH"
+    SAMPLE_SPREADSHEET_ID = config['SAMPLE_SPREADSHEET_ID']
+    SAMPLE_RANGE_NAME = config['SAMPLE_RANGE_NAME']
+    invite_link = config['invite_link']
 
 
     if os.path.exists('credentials.json'):
