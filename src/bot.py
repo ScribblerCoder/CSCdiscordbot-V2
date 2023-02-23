@@ -62,7 +62,8 @@ async def on_ready():
 
     print(f'{bot.user} is connected to the following guild:\n'
     f'{guild.name} (id: f{guild.id})')
-    sync_db.start() # start the task to update db every minute
+    if not sync_db.is_running():
+        sync_db.start() # start the task to update db every minute
 
 @bot.event
 async def on_member_join(member):
