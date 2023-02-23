@@ -112,7 +112,7 @@ async def sync_db():
                 if len(row) < 7:
                     row.append("TBD")
                 # Add members into db
-                cursor.execute('''INSERT OR IGNORE INTO members(
+                cursor.execute('''INSERT OR REPLACE INTO members(
                    name,email,id,class,token,registered,email_sent, day) VALUES 
                    (?,?,?,?,?,?,?,?)''',(row[0],row[1],int(row[2]),row[5],str(uuid.uuid4()),0,0,row[6]) ) 
                 connection.commit()
