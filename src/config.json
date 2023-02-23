@@ -1,6 +1,7 @@
 {
 	"bot_prefix":"YOUR-PREFIX",
 	"guild_id":"YOUR-SERVERID",
-	"token":"YOUR-BOT-TOKEN"
-
+	"token":"YOUR-BOT-TOKEN",
+	"sender":"YOUR-EMAIL",
+	"gmail_pass":"YOUR-GMAIL-APP-PASSWORD"
 }
