@@ -18,6 +18,7 @@ Cyber Security Club's discord bot. A fork of **[CSCdiscordbot](https://github.co
 
 
 
+
 # Ignore the following (Will be reworked)
 
 ## How to run (docker)
